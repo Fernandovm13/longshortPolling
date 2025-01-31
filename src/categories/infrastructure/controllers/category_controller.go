@@ -24,7 +24,6 @@ func NewCategoryController(create *application.CreateCategoryUseCase, list *appl
 	}
 }
 
-// CreateCategory handles POST requests for creating categories
 func (c *CategoryController) CreateCategory(ctx *gin.Context) {
 	var category entities.Category
 	if err := ctx.ShouldBindJSON(&category); err != nil {
@@ -38,7 +37,6 @@ func (c *CategoryController) CreateCategory(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, category)
 }
 
-// ListCategories handles GET requests for listing categories
 func (c *CategoryController) ListCategories(ctx *gin.Context) {
 	categories, err := c.listUseCase.Execute()
 	if err != nil {
@@ -48,7 +46,6 @@ func (c *CategoryController) ListCategories(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, categories)
 }
 
-// UpdateCategory handles PUT requests for updating a category
 func (c *CategoryController) UpdateCategory(ctx *gin.Context) {
 	var category entities.Category
 	if err := ctx.ShouldBindJSON(&category); err != nil {
@@ -62,7 +59,6 @@ func (c *CategoryController) UpdateCategory(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, category)
 }
 
-// DeleteCategory handles DELETE requests for deleting a category
 func (c *CategoryController) DeleteCategory(ctx *gin.Context) {
 	id, _ := strconv.Atoi(ctx.Param("id"))
 	if err := c.deleteUseCase.Execute(int32(id)); err != nil {

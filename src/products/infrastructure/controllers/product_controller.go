@@ -55,10 +55,10 @@ func (c *ProductController) UpdateProduct(ctx *gin.Context) {
 }
 
 func (c *ProductController) DeleteProduct(ctx *gin.Context) {
-	id, _ := strconv.Atoi(ctx.DefaultQuery("id", "0"))
+	id, _ := strconv.Atoi(ctx.Param("id"))
 	if err := c.deleteUseCase.Execute(int32(id)); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Could not delete product"})
 		return
 	}
-	ctx.Status(http.StatusOK)
+	ctx.JSON(http.StatusOK, gin.H{"message": "Product deleted"})
 }
