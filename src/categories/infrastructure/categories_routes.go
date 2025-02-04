@@ -10,4 +10,7 @@ func SetupCategoryRoutes(r *gin.Engine, categoryController *controllers.Category
 	r.GET("/categories", categoryController.ListCategories)
 	r.PUT("/categories", categoryController.UpdateCategory)
 	r.DELETE("/categories/:id", categoryController.DeleteCategory)
+
+	r.GET("/categories/shortpoll", categoryController.ListCategoriesShortPolling)
+
 }

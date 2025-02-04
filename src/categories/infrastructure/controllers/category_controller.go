@@ -1,11 +1,14 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
-	"holamundo/src/categories/application"
-	"holamundo/src/categories/domain/entities"
 	"net/http"
 	"strconv"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"holamundo/src/core"
+	"holamundo/src/categories/application"
+	"holamundo/src/categories/domain/entities"
 )
 
 type CategoryController struct {
@@ -31,16 +34,41 @@ func (c *CategoryController) CreateCategory(ctx *gin.Context) {
 		return
 	}
 	if err := c.createUseCase.Execute(&category); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create category"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo crear la categoría"})
 		return
 	}
+	// Notifica el cambio en categorías
+	core.NotifyCategoryUpdate()
 	ctx.JSON(http.StatusCreated, category)
 }
 
 func (c *CategoryController) ListCategories(ctx *gin.Context) {
 	categories, err := c.listUseCase.Execute()
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Could not fetch categories"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudieron obtener categorías"})
+		return
+	}
+	ctx.JSON(http.StatusOK, categories)
+}
+
+// Short polling: devuelve inmediatamente la lista de categorías.
+func (c *CategoryController) ListCategoriesShortPolling(ctx *gin.Context) {
+	categories, err := c.listUseCase.Execute()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudieron obtener categorías"})
+		return
+	}
+	ctx.JSON(http.StatusOK, categories)
+}
+
+func (c *CategoryController) ListCategoriesLongPolling(ctx *gin.Context) {
+	select {
+	case <-core.CategoryNotifier:
+	case <-time.After(30 * time.Second):
+	}
+	categories, err := c.listUseCase.Execute()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudieron obtener categorías"})
 		return
 	}
 	ctx.JSON(http.StatusOK, categories)
@@ -53,17 +81,21 @@ func (c *CategoryController) UpdateCategory(ctx *gin.Context) {
 		return
 	}
 	if err := c.updateUseCase.Execute(&category); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Could not update category"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo eliminar la categoría"})
 		return
 	}
+	// Notifica el cambio en categorías
+	core.NotifyCategoryUpdate()
 	ctx.JSON(http.StatusOK, category)
 }
 
 func (c *CategoryController) DeleteCategory(ctx *gin.Context) {
 	id, _ := strconv.Atoi(ctx.Param("id"))
 	if err := c.deleteUseCase.Execute(int32(id)); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Could not delete category"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "No se pudo eliminar la categoría"})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"message": "Category deleted"})
+	// Notifica el cambio en categorías
+	core.NotifyCategoryUpdate()
+	ctx.JSON(http.StatusOK, gin.H{"message": "Categoria eliminada"})
 }

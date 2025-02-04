@@ -10,4 +10,7 @@ func SetupProductRoutes(r *gin.Engine, productController *controllers.ProductCon
 	r.GET("/products", productController.ListProducts)
 	r.PUT("/products", productController.UpdateProduct)
 	r.DELETE("/products/:id", productController.DeleteProduct)
+
+		r.GET("/products/shortpoll", productController.ListProductsShortPolling)
+
 }
